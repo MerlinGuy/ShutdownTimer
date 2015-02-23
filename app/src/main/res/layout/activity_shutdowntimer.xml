@@ -1,0 +1,218 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".shutdowntimer"
+    android:id="@+id/shutdowntimer">
+
+    <TextView android:text="Timers" android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/txtTimers"
+        android:textSize="20dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/quit_word"
+        android:id="@+id/btnCancel"
+        android:width="100dp"
+        android:layout_alignTop="@+id/btnStartTimer"
+        android:layout_toRightOf="@+id/btn10" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/start_word"
+        android:id="@+id/btnStartTimer"
+        android:width="100dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/cbBluetooth" />
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/lvTimer"
+        android:layout_below="@+id/txtTimers"
+        android:layout_alignLeft="@+id/txtTimers"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="8dp" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bluetooth"
+        android:id="@+id/cbBluetooth"
+        android:checked="false"
+        android:layout_alignLeft="@+id/btnMinus1"
+        android:layout_below="@+id/btnMinus1"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:enabled="false" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Wifi"
+        android:id="@+id/cbWifi"
+        android:checked="false"
+        android:layout_alignRight="@+id/btnMinus60"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/btnMinus60"
+        android:layout_marginRight="10dp"
+        android:enabled="false" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="time"
+        android:ems="10"
+        android:id="@+id/txtCountdown"
+        android:gravity="center_vertical|center_horizontal"
+        android:textSize="30dp"
+        android:enabled="false"
+        android:layout_below="@+id/spnApps"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="10dp" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1"
+        android:id="@+id/btn1"
+        android:tag="1"
+        android:layout_below="@+id/txtCountdown"
+        android:layout_alignLeft="@+id/txtCountdown"
+        android:layout_marginLeft="6dp"
+        android:layout_marginTop="10dp"
+        android:onClick="timerChange" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="5"
+        android:id="@+id/btn5"
+        android:tag="5"
+        android:layout_below="@+id/txtCountdown"
+        android:layout_toRightOf="@+id/btn1"
+        android:layout_marginLeft="10dp"
+        android:layout_alignTop="@+id/btn1"
+        android:onClick="timerChange" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="10"
+        android:id="@+id/btn10"
+        android:tag="10"
+        android:layout_alignTop="@+id/btn1"
+        android:layout_toRightOf="@+id/btn5"
+        android:layout_marginLeft="10dp"
+        android:onClick="timerChange" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="30"
+        android:id="@+id/btn30"
+        android:tag="30"
+        android:layout_toRightOf="@+id/btn10"
+        android:layout_marginLeft="10dp"
+        android:layout_alignTop="@+id/btn1"
+        android:onClick="timerChange" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="60"
+        android:id="@+id/btn60"
+        android:tag="60"
+        android:layout_toRightOf="@+id/btn30"
+        android:layout_marginLeft="10dp"
+        android:layout_alignTop="@+id/btn1"
+        android:onClick="timerChange" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:text="-"
+        android:id="@+id/btnMinus1"
+        android:tag="-1"
+        android:layout_below="@+id/btn1"
+        android:layout_alignLeft="@+id/btn1"
+        android:layout_marginLeft="6dp"
+        android:layout_marginTop="10dp"
+        android:onClick="timerChange" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:text="-"
+        android:id="@+id/btnMinus5"
+        android:tag="-5"
+        android:layout_below="@+id/btn5"
+        android:layout_alignLeft="@+id/btn5"
+        android:layout_marginLeft="6dp"
+        android:layout_marginTop="10dp"
+        android:onClick="timerChange" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:text="@string/MinusSymbol"
+        android:id="@+id/btnMinus10"
+        android:tag="-10"
+        android:layout_alignLeft="@+id/btn10"
+        android:layout_below="@+id/btn10"
+        android:layout_marginLeft="6dp"
+        android:layout_marginTop="10dp"
+        android:onClick="timerChange" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:text="-"
+        android:id="@+id/btnMinus30"
+        android:tag="-30"
+        android:layout_alignLeft="@+id/btn30"
+        android:layout_below="@+id/btn30"
+        android:layout_marginLeft="6dp"
+        android:layout_marginTop="10dp"
+        android:onClick="timerChange" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:text="-"
+        android:id="@+id/btnMinus60"
+        android:tag="-60"
+        android:layout_alignLeft="@+id/btn60"
+        android:layout_marginLeft="6dp"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/btn60"
+        android:onClick="timerChange" />
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/spnApps"
+        android:layout_below="@+id/lvTimer"
+        android:layout_marginTop="24dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:spinnerMode="dropdown" />
+
+</RelativeLayout>
