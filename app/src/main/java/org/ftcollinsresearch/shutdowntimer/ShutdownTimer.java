@@ -6,11 +6,9 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -21,7 +19,6 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.IBinder;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
@@ -47,20 +44,19 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ShutdownTimer extends Activity {
 
-    private final int NOT_STARTED = 0, RUNNING = 1, PAUSED = 2, COMPLETE = 3;
+    private final static int NOT_STARTED = 0, RUNNING = 1, PAUSED = 2;
+    private final static int _defaultRunSeconds = 1800;
 
     public final static String RUN_SECS = "run_seconds";
-    private final String DIS_BLUE = "disable_bluetooth";
-    private final String DIS_WIFI = "disable_wifi";
-    private final String RUN_APP = "run_app";
-    private final String _FILENAME_ = "org.ftcollinsresearch.shutdowntimer";
-    private final String _UNSELECTED_ = "_unselected_";
+    private final static String DIS_BLUE = "disable_bluetooth";
+    private final static String DIS_WIFI = "disable_wifi";
+    private final static String RUN_APP = "run_app";
+    private final static String _FILENAME_ = "org.ftcollinsresearch.shutdowntimer";
+    private final static String _UNSELECTED_ = "_unselected_";
 
-    private final int _defaultRunSeconds = 1800;
     private int _runSeconds = 10;
     private CountDownTimer _cdTimer = null;
     private int _runState = NOT_STARTED;
@@ -69,42 +65,19 @@ public class ShutdownTimer extends Activity {
     private BluetoothAdapter _BluetoothAdapter = null;
     private CheckBox _cbBluetooth = null;
 
-    private WifiManager _wifiManager = null;
     private CheckBox _cbWifi = null;
 
-    private List _PInfos = null;
+    private List<PInfo> _PInfos = null;
     private ArrayAdapter<PInfo> _appAdapter = null;
     private Spinner _appSpinner = null;
     private String _runApp = null;
 
-    private int _notification_id = -1;
 
-//    private ShutdownService _shutdownService;
-//    private boolean _isBound = false;
-
-
-//    private ServiceConnection _connShutdownService = new ServiceConnection() {
-//
-//        public void onServiceConnected(ComponentName className,
-//                                       IBinder service) {
-//            ShutdownService.LocalBinder binder = (ShutdownService.LocalBinder) service;
-//            _shutdownService = binder.getService();
-//            _isBound = true;
-//        }
-//
-//        public void onServiceDisconnected(ComponentName arg0) {
-//            _isBound = false;
-//        }
-//
-//    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shutdowntimer);
-
-//        Intent intent = new Intent(this, ShutdownService.class);
-//        bindService(intent, _connShutdownService, Context.BIND_AUTO_CREATE);
 
         initButtons();
 
@@ -198,6 +171,7 @@ public class ShutdownTimer extends Activity {
                     in.close();
                 }
                 catch(Exception e){
+                    Log.e("FCR","exception", e);
                 }
             }
         }
@@ -227,7 +201,7 @@ public class ShutdownTimer extends Activity {
         List<PackageInfo> pkgs = pm.getInstalledPackages(0);
         _PInfos = new ArrayList<PInfo>();
 
-        _PInfos.add( new PInfo("_unselected", "none") );
+        _PInfos.add(new PInfo("_unselected", "none") );
 
         for (PackageInfo pi : pkgs) {
             if ((pi.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
@@ -337,11 +311,11 @@ public class ShutdownTimer extends Activity {
             showShutdownNotification();
             createCountDown();
             ((Button)findViewById(R.id.btnStartTimer)).setText(R.string.pause_word);
+            if ((_runState != PAUSED) && (! _runApp.equalsIgnoreCase(_UNSELECTED_))) {
+                Intent LaunchIntent = getPackageManager().getLaunchIntentForPackage(_runApp);
+                startActivity(LaunchIntent);
+            }
             _runState = RUNNING;
-//            if ((_runState == PAUSED) && (! _runApp.equalsIgnoreCase(_UNSELECTED_))) {
-//                Intent LaunchIntent = getPackageManager().getLaunchIntentForPackage(_runApp);
-//                startActivity(LaunchIntent);
-//            }
         }
         else if (_runState == RUNNING) {
             _cdTimer.cancel();
@@ -351,6 +325,7 @@ public class ShutdownTimer extends Activity {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void showShutdownNotification(){
 
         Context context = getApplicationContext();
@@ -413,6 +388,7 @@ public class ShutdownTimer extends Activity {
                 WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
                 wifiManager.setWifiEnabled(false);
             }
+
             Toast toast = Toast.makeText(getApplicationContext(), "Timer Complete", Toast.LENGTH_SHORT);
             toast.show();
         } catch (Exception e) {
@@ -463,9 +439,11 @@ public class ShutdownTimer extends Activity {
     }
 
     private void setupWifi() {
+        WifiManager wifiManager;
+
         _cbWifi = (CheckBox) findViewById(R.id.cbWifi);
-        _wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
-        _cbWifi.setEnabled(_wifiManager != null && _wifiManager.isWifiEnabled());
+        wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+        _cbWifi.setEnabled(wifiManager != null && wifiManager.isWifiEnabled());
 
         BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
 

@@ -1,13 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">ShutdownTimer</string>
+    <string name="apps">Apps</string>
+    <string name="app_name">Shutdown Timer</string>
     <string name="action_settings">Settings</string>
-    <string name="timers">Timers</string>
+    <string name="bluetooth">Bluetooth</string>
     <string name="lvTimers">Timers</string>
-    <string name="MinusSymbol">-</string>
-    <string name="start_word">Start</string>
+    <string name="minus_symbol">-</string>
+
+    <string name="num_one">1</string>
+    <string name="num_five">5</string>
+    <string name="num_ten">10</string>
+    <string name="num_thirty">30</string>
+    <string name="num_sixty">60</string>
+
     <string name="pause_word">Pause</string>
     <string name="quit_word">Quit</string>
+    <string name="start_word">Start</string>
+    <string name="timers">Timers</string>
 
+    <string name="unselected">&gt;unselected&lt;</string>
+    <string name="wifi">Wifi</string>
 </resources>

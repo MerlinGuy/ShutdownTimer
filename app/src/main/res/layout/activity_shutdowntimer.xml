@@ -6,63 +6,60 @@
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".shutdowntimer"
     android:id="@+id/shutdowntimer">
 
-    <TextView android:text="Timers" android:layout_width="wrap_content"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/txtTimers"
-        android:textSize="20dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true" />
+        android:layout_alignParentLeft="true"
+        android:id="@+id/loTimers">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/quit_word"
-        android:id="@+id/btnCancel"
-        android:width="100dp"
-        android:layout_alignTop="@+id/btnStartTimer"
-        android:layout_toRightOf="@+id/btn10" />
+        <TextView android:text="@string/timers"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:id="@+id/tvTimers"
+            android:textSize="18sp"
+            android:layout_gravity="center_vertical|right"
+            android:textStyle="bold"
+            android:gravity="center_vertical" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/start_word"
-        android:id="@+id/btnStartTimer"
-        android:width="100dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignLeft="@+id/cbBluetooth" />
+        <Spinner
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:id="@+id/lvTimer"
+            android:layout_weight="1"
+            android:gravity="fill_horizontal"
+            android:layout_marginLeft="4dp" />
 
-    <Spinner
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/lvTimer"
-        android:layout_below="@+id/txtTimers"
-        android:layout_alignLeft="@+id/txtTimers"
-        android:layout_alignParentRight="true"
-        android:layout_marginTop="8dp" />
+    </LinearLayout>
 
-    <CheckBox
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Bluetooth"
-        android:id="@+id/cbBluetooth"
-        android:checked="false"
-        android:layout_alignLeft="@+id/btnMinus1"
-        android:layout_below="@+id/btnMinus1"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="10dp"
-        android:enabled="false" />
+        android:layout_alignParentLeft="true"
+        android:id="@+id/loApps"
+        android:focusable="true"
+        android:layout_below="@+id/loTimers"
+        android:layout_marginTop="10dp">
 
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Wifi"
-        android:id="@+id/cbWifi"
-        android:checked="false"
-        android:layout_alignRight="@+id/btnMinus60"
-        android:layout_marginTop="10dp"
-        android:layout_below="@+id/btnMinus60"
-        android:layout_marginRight="10dp"
-        android:enabled="false" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="@string/apps"
+            android:id="@+id/tvApps"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:gravity="center_vertical" />
+
+        <Spinner
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:id="@+id/spnApps"
+            android:layout_weight="1"
+            android:spinnerMode="dropdown"
+            android:layout_marginLeft="4dp" />
+
+    </LinearLayout>
 
     <EditText
         android:layout_width="wrap_content"
@@ -71,148 +68,221 @@
         android:ems="10"
         android:id="@+id/txtCountdown"
         android:gravity="center_vertical|center_horizontal"
-        android:textSize="30dp"
+        android:textSize="30sp"
         android:enabled="false"
-        android:layout_below="@+id/spnApps"
-        android:layout_alignParentLeft="true"
-        android:layout_marginTop="10dp" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="1"
-        android:id="@+id/btn1"
-        android:tag="1"
-        android:layout_below="@+id/txtCountdown"
-        android:layout_alignLeft="@+id/txtCountdown"
-        android:layout_marginLeft="6dp"
-        android:layout_marginTop="10dp"
-        android:onClick="timerChange" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="5"
-        android:id="@+id/btn5"
-        android:tag="5"
-        android:layout_below="@+id/txtCountdown"
-        android:layout_toRightOf="@+id/btn1"
-        android:layout_marginLeft="10dp"
-        android:layout_alignTop="@+id/btn1"
-        android:onClick="timerChange" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="10"
-        android:id="@+id/btn10"
-        android:tag="10"
-        android:layout_alignTop="@+id/btn1"
-        android:layout_toRightOf="@+id/btn5"
-        android:layout_marginLeft="10dp"
-        android:onClick="timerChange" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="30"
-        android:id="@+id/btn30"
-        android:tag="30"
-        android:layout_toRightOf="@+id/btn10"
-        android:layout_marginLeft="10dp"
-        android:layout_alignTop="@+id/btn1"
-        android:onClick="timerChange" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="60"
-        android:id="@+id/btn60"
-        android:tag="60"
-        android:layout_toRightOf="@+id/btn30"
-        android:layout_marginLeft="10dp"
-        android:layout_alignTop="@+id/btn1"
-        android:onClick="timerChange" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="34dp"
-        android:layout_height="34dp"
-        android:text="-"
-        android:id="@+id/btnMinus1"
-        android:tag="-1"
-        android:layout_below="@+id/btn1"
-        android:layout_alignLeft="@+id/btn1"
-        android:layout_marginLeft="6dp"
-        android:layout_marginTop="10dp"
-        android:onClick="timerChange" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="34dp"
-        android:layout_height="34dp"
-        android:text="-"
-        android:id="@+id/btnMinus5"
-        android:tag="-5"
-        android:layout_below="@+id/btn5"
-        android:layout_alignLeft="@+id/btn5"
-        android:layout_marginLeft="6dp"
-        android:layout_marginTop="10dp"
-        android:onClick="timerChange" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="34dp"
-        android:layout_height="34dp"
-        android:text="@string/MinusSymbol"
-        android:id="@+id/btnMinus10"
-        android:tag="-10"
-        android:layout_alignLeft="@+id/btn10"
-        android:layout_below="@+id/btn10"
-        android:layout_marginLeft="6dp"
-        android:layout_marginTop="10dp"
-        android:onClick="timerChange" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="34dp"
-        android:layout_height="34dp"
-        android:text="-"
-        android:id="@+id/btnMinus30"
-        android:tag="-30"
-        android:layout_alignLeft="@+id/btn30"
-        android:layout_below="@+id/btn30"
-        android:layout_marginLeft="6dp"
-        android:layout_marginTop="10dp"
-        android:onClick="timerChange" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="34dp"
-        android:layout_height="34dp"
-        android:text="-"
-        android:id="@+id/btnMinus60"
-        android:tag="-60"
-        android:layout_alignLeft="@+id/btn60"
-        android:layout_marginLeft="6dp"
-        android:layout_marginTop="10dp"
-        android:layout_below="@+id/btn60"
-        android:onClick="timerChange" />
-
-    <Spinner
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/spnApps"
-        android:layout_below="@+id/lvTimer"
-        android:layout_marginTop="24dp"
+        android:layout_alignParentLeft="false"
+        android:layout_marginTop="20dp"
+        android:layout_below="@+id/loApps"
+        android:width="220dp"
         android:layout_centerHorizontal="true"
+        android:background="@drawable/custom_bg_2" />
+
+    <RelativeLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:spinnerMode="dropdown" />
+        android:id="@+id/loIncrement"
+        android:layout_below="@+id/txtCountdown"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="10dp">
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/num_one"
+            android:id="@+id/btn1"
+            android:tag="1" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/num_five"
+            android:id="@+id/btn5"
+            android:tag="5"
+            android:layout_toRightOf="@+id/btn1"
+            android:layout_marginLeft="10dp"
+            android:layout_alignTop="@+id/btn1" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/num_ten"
+            android:id="@+id/btn10"
+            android:tag="10"
+            android:layout_alignTop="@+id/btn1"
+            android:layout_toRightOf="@+id/btn5"
+            android:layout_marginLeft="10dp"/>
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/num_thirty"
+            android:id="@+id/btn30"
+            android:tag="30"
+            android:layout_toRightOf="@+id/btn10"
+            android:layout_marginLeft="10dp"
+            android:layout_alignTop="@+id/btn1" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/num_sixty"
+            android:id="@+id/btn60"
+            android:tag="60"
+            android:layout_toRightOf="@+id/btn30"
+            android:layout_marginLeft="10dp"
+            android:layout_alignTop="@+id/btn1"/>
+
+        <Button
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:text="@string/minus_symbol"
+            android:id="@+id/btnMinus1"
+            android:tag="-1"
+            android:layout_below="@+id/btn1"
+            android:layout_alignLeft="@+id/btn1"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="6dp" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:text="@string/minus_symbol"
+            android:id="@+id/btnMinus5"
+            android:tag="-5"
+            android:layout_below="@+id/btn5"
+            android:layout_alignLeft="@+id/btn5"
+            android:layout_marginLeft="6dp"
+            android:layout_marginTop="10dp" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:text="@string/minus_symbol"
+            android:id="@+id/btnMinus10"
+            android:tag="-10"
+            android:layout_alignLeft="@+id/btn10"
+            android:layout_below="@+id/btn10"
+            android:layout_marginLeft="6dp"
+            android:layout_marginTop="10dp"/>
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:text="@string/minus_symbol"
+            android:id="@+id/btnMinus30"
+            android:tag="-30"
+            android:layout_alignLeft="@+id/btn30"
+            android:layout_below="@+id/btn30"
+            android:layout_marginLeft="6dp"
+            android:layout_marginTop="10dp"/>
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:text="@string/minus_symbol"
+            android:id="@+id/btnMinus60"
+            android:tag="-60"
+            android:layout_alignLeft="@+id/btn60"
+            android:layout_marginLeft="6dp"
+            android:layout_marginTop="10dp"
+            android:layout_below="@+id/btn60"/>
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:id="@+id/loBroadcast"
+        android:layout_below="@+id/loIncrement"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="5dp"
+            android:layout_weight="1"/>
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bluetooth"
+            android:id="@+id/cbBluetooth"
+            android:checked="false"
+            android:enabled="false" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="5dp"
+            android:layout_weight="1"/>
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/wifi"
+            android:id="@+id/cbWifi"
+            android:checked="false"
+            android:enabled="false"
+            android:layout_weight="1.02" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="5dp"
+            android:layout_weight="1"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="false"
+        android:id="@+id/loActions"
+        android:layout_below="@+id/loBroadcast"
+        android:layout_alignParentBottom="true">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="5dp"
+            android:layout_weight="1"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/start_word"
+            android:id="@+id/btnStartTimer"
+            android:width="100dp"
+            android:layout_gravity="bottom" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="5dp"
+            android:layout_weight="1"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/quit_word"
+            android:id="@+id/btnCancel"
+            android:width="100dp"
+            android:layout_gravity="bottom|right" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="5dp"
+            android:layout_weight="1"/>
+
+    </LinearLayout>
 
 </RelativeLayout>
