@@ -20,5 +20,6 @@
     <string name="timers">Timers</string>
 
     <string name="unselected">&gt;unselected&lt;</string>
+    <string name="mute">Mute</string>
     <string name="wifi">Wifi</string>
 </resources>

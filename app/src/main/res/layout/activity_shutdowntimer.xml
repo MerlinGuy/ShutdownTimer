@@ -212,7 +212,7 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="5dp"
-            android:layout_weight="1"/>
+            android:layout_weight=".5"/>
 
         <CheckBox
             android:layout_width="wrap_content"
@@ -222,11 +222,6 @@
             android:checked="false"
             android:enabled="false" />
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="5dp"
-            android:layout_weight="1"/>
-
         <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -234,12 +229,23 @@
             android:id="@+id/cbWifi"
             android:checked="false"
             android:enabled="false"
-            android:layout_weight="1.02" />
+            android:layout_weight="1.02"
+            android:layout_marginLeft="2dp" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/mute"
+            android:id="@+id/cbVolume"
+            android:checked="false"
+            android:enabled="false"
+            android:layout_weight="1.02"
+            android:layout_marginLeft="2dp" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="5dp"
-            android:layout_weight="1"/>
+            android:layout_weight=".5"/>
 
     </LinearLayout>
 
