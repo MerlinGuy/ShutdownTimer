@@ -30,6 +30,13 @@
             android:gravity="fill_horizontal"
             android:layout_marginLeft="4dp" />
 
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/imageButton"
+            android:layout_weight=".5"
+            android:icon="@android:drawable/ic_input_add"/>
+
     </LinearLayout>
 
     <LinearLayout
@@ -55,6 +62,7 @@
             android:layout_width="0dp"
             android:layout_height="50dp"
             android:id="@+id/spnApps"
+            android:tag="run_app"
             android:layout_weight="1"
             android:spinnerMode="dropdown"
             android:layout_marginLeft="4dp" />
@@ -218,6 +226,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/bluetooth"
+            android:tag="dis_bluetooth"
             android:id="@+id/cbBluetooth"
             android:checked="false"
             android:enabled="false" />
@@ -226,6 +235,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/wifi"
+            android:tag="dis_wifi"
             android:id="@+id/cbWifi"
             android:checked="false"
             android:enabled="false"
@@ -236,9 +246,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/mute"
-            android:id="@+id/cbVolume"
+            android:tag="mute"
+            android:id="@+id/cbMute"
             android:checked="false"
-            android:enabled="false"
             android:layout_weight="1.02"
             android:layout_marginLeft="2dp" />
 

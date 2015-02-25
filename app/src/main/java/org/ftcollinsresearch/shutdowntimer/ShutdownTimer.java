@@ -20,7 +20,6 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -34,14 +33,8 @@ import android.widget.Spinner;
 import android.widget.Toast;
 import android.widget.Button;
 
-
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,12 +44,9 @@ public class ShutdownTimer extends Activity {
     private final static int NOT_STARTED = 0, RUNNING = 1, PAUSED = 2;
     private final static int _defaultRunSeconds = 1800;
 
+    public final static String DEFAULT_STATE = "default";
     public final static String RUN_SECS = "run_seconds";
-    private final static String DIS_BLUE = "disable_bluetooth";
-    private final static String DIS_WIFI = "disable_wifi";
     private final static String RUN_APP = "run_app";
-    private final static String _FILENAME_ = "org.ftcollinsresearch.shutdowntimer";
-    private final static String _UNSELECTED_ = "_unselected_";
 
     private int _runSeconds = 10;
     private CountDownTimer _cdTimer = null;
@@ -65,30 +55,33 @@ public class ShutdownTimer extends Activity {
 
     private BluetoothAdapter _BluetoothAdapter = null;
     private CheckBox _cbBluetooth = null;
-
     private CheckBox _cbWifi = null;
 
     private List<PInfo> _PInfos = null;
     private ArrayAdapter<PInfo> _appAdapter = null;
     private Spinner _appSpinner = null;
-    private String _runApp = null;
 
+    private String _currentStateName;
+    private JSONObject _currentState;
 
+    protected boolean IS_TEST = true;
+    private String _unselected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shutdowntimer);
 
-        initButtons();
-
-        setupBluetooth();
-
-        setupWifi();
-
+        _unselected = getString(R.string.unselected);
+        _currentStateName = DEFAULT_STATE;
         setupApps();
+        restoreState(_currentStateName);
 
-        restoreState();
+        setupListeners();
+
+        setBluetoothCallback();
+
+        setWifiCallback();
 
         _initialized = true;
     }
@@ -115,130 +108,16 @@ public class ShutdownTimer extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void saveState() {
-        if (! _initialized) return;
-        try {
-            JSONObject json = new JSONObject();
-            json.put(RUN_SECS, _runSeconds);
-            json.put(DIS_BLUE, _cbBluetooth.isChecked());
-            json.put(DIS_WIFI, _cbWifi.isChecked());
-            PInfo pinfo = (PInfo) _appSpinner.getSelectedItem();
-            _runApp = pinfo.pname;
-            json.put(RUN_APP, pinfo.pname);
-            byte[] encBytes = Base64.encode(json.toString().getBytes(), Base64.DEFAULT);
-            FileOutputStream fos = openFileOutput(_FILENAME_, Context.MODE_PRIVATE);
-            fos.write(encBytes);
-            fos.close();
-
-            Log.d("FCR", "saveState:  " + json.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void restoreState() {
-        InputStream in = null;
-
-        try {
-            File file = getBaseContext().getFileStreamPath(_FILENAME_);
-            JSONObject json;
-            if (file.exists()) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                byte[] buffer = new byte[1024];
-                int bytesRead;
-                in = new FileInputStream(file);
-
-                while ( (bytesRead = in.read(buffer)) != -1) {
-                    baos.write(buffer, 0, bytesRead);
-                }
-                byte[] bytes = Base64.decode(baos.toByteArray(), Base64.DEFAULT);
-                json = new JSONObject(new String(bytes));
-            } else {
-                json = new JSONObject();
-            }
-
-            Log.d("FCR", "restoreState:  " + json.toString());
-            _runSeconds = json.optInt(RUN_SECS, _defaultRunSeconds);
-            _cbBluetooth.setChecked(json.optBoolean(DIS_BLUE, false));
-            _cbWifi.setChecked(json.optBoolean(DIS_WIFI, false));
-            setRunApp(json.optString(RUN_APP, _UNSELECTED_));
-            setRunSeconds();
-
-        } catch (Exception e) {
-            Log.e("restoreState", e.getMessage());
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                }
-                catch(Exception e){
-                    Log.e("FCR","exception", e);
-                }
-            }
-        }
-    }
-
-    private void setRunApp(String packageName) {
-        int position = -1;
-        PInfo pi;
-
-        if (packageName != null) {
-            for (Object obj : _PInfos) {
-                pi = (PInfo)obj;
-                if (pi.pname.equalsIgnoreCase(packageName)) {
-                    position = _appAdapter.getPosition(pi);
-                    _runApp = pi.pname;
-                    break;
-                }
-            }
-        }
-        _appSpinner.setSelection(position);
-    }
-
-    private void setupApps() {
-
-        _appSpinner = (Spinner) findViewById(R.id.spnApps);
-        final PackageManager pm = getPackageManager();
-        List<PackageInfo> pkgs = pm.getInstalledPackages(0);
-        _PInfos = new ArrayList<PInfo>();
-
-        _PInfos.add(new PInfo("_unselected", "none") );
-
-        for (PackageInfo pi : pkgs) {
-            if ((pi.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
-                _PInfos.add( new PInfo( pi, pm) );
-            }
-
-        }
-
-        Collections.sort(_PInfos, new PInfoComparator());
-
-        _appAdapter = new ArrayAdapter<PInfo>(this,android.R.layout.simple_spinner_item, _PInfos);
-        _appAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        _appSpinner.setAdapter(_appAdapter);
-        _appSpinner.setSelection(0, false);
-        _appSpinner.setOnItemSelectedListener(new  AdapterView.OnItemSelectedListener() {
-
-            public void onItemSelected( AdapterView<?> parent, View view, int pos, long id){
-                saveState();
-            }
-            public void onNothingSelected(AdapterView<?> parent){
-
-            }
-
-        });
-    }
-
-    private void initButtons() {
+    private void setupListeners() {
 
         final OnClickListener ocl = new OnClickListener() {
             public void onClick(final View v) {
-                String tag = (String) v.getTag();
-                _runSeconds += Integer.parseInt(tag) * 60;
+                _runSeconds += Integer.parseInt((String) v.getTag()) * 60;
+
                 if (_runSeconds < 0) {
                     _runSeconds = 0;
                 }
-                saveState();
+                saveState(_currentStateName, RUN_SECS, _runSeconds);
                 setRunSeconds();
             }
         };
@@ -256,14 +135,14 @@ public class ShutdownTimer extends Activity {
 
 
         findViewById(R.id.btnCancel).setOnClickListener(
-            new OnClickListener() {
-                @Override
-                public void onClick(View arg0) {
-                    clearNotification();
-                    android.os.Process.killProcess(android.os.Process.myPid());
-                    System.exit(1);
+                new OnClickListener() {
+                    @Override
+                    public void onClick(View arg0) {
+                        clearNotification();
+                        android.os.Process.killProcess(android.os.Process.myPid());
+                        System.exit(1);
+                    }
                 }
-            }
         );
 
         findViewById(R.id.btnStartTimer).setOnClickListener(
@@ -275,27 +154,121 @@ public class ShutdownTimer extends Activity {
                 }
         );
 
-        findViewById(R.id.cbBluetooth).setOnClickListener(
-            new OnClickListener() {
-                @Override
-                public void onClick(View arg0) {
-                    saveState();
-                }
-            }
-        );
+        setCheckboxListener(R.id.cbBluetooth);
+        setCheckboxListener(R.id.cbWifi);
+        setCheckboxListener(R.id.cbMute);
 
-        findViewById(R.id.cbWifi).setOnClickListener(
+        _appSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                PInfo pinfo = (PInfo) _appSpinner.getSelectedItem();
+                saveState(_currentStateName,(String) _appSpinner.getTag(), pinfo.pname);
+            }
+
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+
+        });
+
+    }
+
+    private Object getTag(int id) {
+        View view =  findViewById(id);
+        if (view != null) {
+            return view.getTag();
+        } else {
+            return null;
+        }
+    }
+
+    private void setCheckboxListener(int id) {
+        final CheckBox cb = (CheckBox) findViewById(id);
+        final String field = (String) cb.getTag();
+        cb.setOnClickListener(
                 new OnClickListener() {
                     @Override
                     public void onClick(View arg0) {
-                        saveState();
+                        saveState(_currentStateName, field, cb.isChecked());
                     }
                 }
         );
     }
 
-    private void setRunSeconds() {
+    private void setCheckboxState(int id) {
+        CheckBox cb = (CheckBox) findViewById(id);
+        cb.setChecked(_currentState.optBoolean((String)cb.getTag(), false));
+    }
 
+    private void saveState(String state_name, String field, Object value) {
+        if (! _initialized) return;
+        try {
+            _currentState.put(field, value);
+            StateSaver.saveState(this, state_name, _currentState);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void restoreState(String state_name) {
+        try {
+            _currentState = StateSaver.restoreState(this, state_name);
+            _runSeconds = _currentState.optInt(RUN_SECS, _defaultRunSeconds);
+            if (IS_TEST) {
+                _runSeconds = 10;
+            }
+            setCheckboxState(R.id.cbBluetooth);
+            setCheckboxState(R.id.cbWifi);
+            setCheckboxState(R.id.cbMute);
+            setRunApp(_currentState.optString(RUN_APP, _unselected));
+            setRunSeconds();
+
+        } catch (Exception e) {
+            Log.e("FCR", e.getMessage());
+        }
+    }
+
+    private void setRunApp(String packageName) {
+        int position = -1;
+        PInfo pi;
+
+        if (packageName != null) {
+            for (Object obj : _PInfos) {
+                pi = (PInfo)obj;
+                if (pi.pname.equalsIgnoreCase(packageName)) {
+                    position = _appAdapter.getPosition(pi);
+                    break;
+                }
+            }
+        }
+        _appSpinner.setSelection(position);
+    }
+
+    private void setupApps() {
+
+        _appSpinner = (Spinner) findViewById(R.id.spnApps);
+        final PackageManager pm = getPackageManager();
+        List<PackageInfo> pkgs = pm.getInstalledPackages(0);
+        _PInfos = new ArrayList<PInfo>();
+
+        _PInfos.add(new PInfo(_unselected, "none"));
+
+        for (PackageInfo pi : pkgs) {
+            if ((pi.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
+                _PInfos.add( new PInfo( pi, pm) );
+            }
+
+        }
+
+        Collections.sort(_PInfos, new PInfoComparator());
+
+        _appAdapter = new ArrayAdapter<PInfo>(this,android.R.layout.simple_spinner_item, _PInfos);
+        _appAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        _appSpinner.setAdapter(_appAdapter);
+        _appSpinner.setSelection(0, false);
+    }
+
+    private void setRunSeconds() {
         int hours = _runSeconds / 3600;
         int remain = _runSeconds - (hours * 3600);
         int minutes = remain / 60;
@@ -303,7 +276,6 @@ public class ShutdownTimer extends Activity {
         String timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds);
         EditText editText = (EditText)findViewById(R.id.txtCountdown);
         editText.setText(timeString);
-
     }
 
     private void startCountdown() {
@@ -312,9 +284,9 @@ public class ShutdownTimer extends Activity {
             showShutdownNotification();
             createCountDown();
             ((Button)findViewById(R.id.btnStartTimer)).setText(R.string.pause_word);
-            if ((_runState != PAUSED) && (! _runApp.equalsIgnoreCase(_UNSELECTED_))) {
-                Intent LaunchIntent = getPackageManager().getLaunchIntentForPackage(_runApp);
-                startActivity(LaunchIntent);
+
+            if (_runState != PAUSED) {
+                startApp();
             }
             _runState = RUNNING;
         }
@@ -325,6 +297,18 @@ public class ShutdownTimer extends Activity {
             clearNotification();
         }
     }
+
+    private void startApp() {
+        try {
+            String runApp = _currentState.optString((String) _appSpinner.getTag(), null);
+            if (runApp == null || runApp.equalsIgnoreCase(_unselected)) return;
+            Intent LaunchIntent = getPackageManager().getLaunchIntentForPackage(runApp);
+            startActivity(LaunchIntent);
+        } catch (Exception e) {
+            Log.e("FCR", e.getMessage());
+        }
+    }
+
 
     @SuppressWarnings("deprecation")
     private void showShutdownNotification(){
@@ -390,6 +374,10 @@ public class ShutdownTimer extends Activity {
                 wifiManager.setWifiEnabled(false);
             }
 
+            if (_currentState.optBoolean((String) getTag(R.id.cbMute), false)) {
+                lowerVolume(0);
+            }
+
             Toast toast = Toast.makeText(getApplicationContext(), "Timer Complete", Toast.LENGTH_SHORT);
             toast.show();
         } catch (Exception e) {
@@ -402,17 +390,12 @@ public class ShutdownTimer extends Activity {
         clearNotification();
     }
 
-    private void lowerVolume() {
-        AudioManager am =
-                (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-
-        am.setStreamVolume(
-                AudioManager.STREAM_MUSIC,
-                am.getStreamMaxVolume(AudioManager.STREAM_MUSIC),
-                0);
+    private void lowerVolume(int level) {
+        AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        am.setStreamVolume(AudioManager.STREAM_MUSIC,level,0);
     }
 
-    private void setupBluetooth() {
+    private void setBluetoothCallback() {
 
         _cbBluetooth = (CheckBox) findViewById(R.id.cbBluetooth);
         _BluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -449,7 +432,7 @@ public class ShutdownTimer extends Activity {
         );
     }
 
-    private void setupWifi() {
+    private void setWifiCallback() {
         WifiManager wifiManager;
 
         _cbWifi = (CheckBox) findViewById(R.id.cbWifi);
