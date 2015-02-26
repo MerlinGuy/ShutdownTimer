@@ -1,5 +1,5 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="fill_parent"
     android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
@@ -11,7 +11,8 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:id="@+id/loTimers">
+        android:id="@+id/loTimers"
+        android:layout_margin="0dp">
 
         <TextView android:text="@string/timers"
             android:layout_width="wrap_content"
@@ -25,17 +26,18 @@
         <Spinner
             android:layout_width="0dp"
             android:layout_height="50dp"
-            android:id="@+id/lvTimer"
+            android:id="@+id/spnTimer"
             android:layout_weight="1"
             android:gravity="fill_horizontal"
             android:layout_marginLeft="4dp" />
 
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/imageButton"
-            android:layout_weight=".5"
-            android:icon="@android:drawable/ic_input_add"/>
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:text="@string/ellipsis"
+            android:id="@+id/btnAddTimer"
+            android:layout_gravity="center_vertical" />
 
     </LinearLayout>
 
@@ -61,7 +63,7 @@
         <Spinner
             android:layout_width="0dp"
             android:layout_height="50dp"
-            android:id="@+id/spnApps"
+            android:id="@+id/spnApp"
             android:tag="run_app"
             android:layout_weight="1"
             android:spinnerMode="dropdown"
@@ -229,7 +231,7 @@
             android:tag="dis_bluetooth"
             android:id="@+id/cbBluetooth"
             android:checked="false"
-            android:enabled="false" />
+            android:enabled="true" />
 
         <CheckBox
             android:layout_width="wrap_content"
@@ -238,7 +240,7 @@
             android:tag="dis_wifi"
             android:id="@+id/cbWifi"
             android:checked="false"
-            android:enabled="false"
+            android:enabled="true"
             android:layout_weight="1.02"
             android:layout_marginLeft="2dp" />
 

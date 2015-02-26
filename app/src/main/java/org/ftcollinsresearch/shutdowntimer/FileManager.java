@@ -15,11 +15,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 
-public class StateSaver {
-
-    public StateSaver(Activity activity) {
-    }
+public class FileManager {
 
     public static void saveState(Activity activity, String state_name, JSONObject jsonState) {
         try {
@@ -29,7 +27,8 @@ public class StateSaver {
             fos.write(encBytes);
             fos.close();
 
-            Log.d("FCR", "saveState:  " + jsonState.toString());
+            Log.d("FCR", "saveState:  " + state_name);
+            Log.d("FCR", "      JSON  " + jsonState.toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -57,7 +56,8 @@ public class StateSaver {
                 json = new JSONObject();
             }
 
-            Log.d("FCR", "restoreState:  " + json.toString());
+            Log.d("FCR", "restoreState:  " + state_name);
+            Log.d("FCR", "    JSON  " + json.toString());
             return json;
 
         } catch (Exception e) {
@@ -75,5 +75,46 @@ public class StateSaver {
         }
     }
 
+    public static void deleteBadFiles(Activity activity) {
+        File dir = activity.getFilesDir();
+        String[] files = activity.getApplication().fileList();
+        String prefix = activity.getApplicationContext().getPackageName();
+        int start = prefix.length();
+        String file;
+        for (int i=files.length-1; i>-1; i--) {
+            file = files[i];
+            if (file.length() == start) {
+                (new File(dir, file)).delete();
+            }
+        }
+    }
+
+    public static void deleteAllFiles(Activity activity) {
+        File dir = activity.getFilesDir();
+        String[] files = activity.getApplication().fileList();
+        for (int i=files.length-1; i>-1; i--) {
+            (new File(dir, files[i])).delete();
+        }
+    }
+
+    public static String[] getAllFiles(Activity activity) {
+        String[] files = activity.getApplication().fileList();
+        String prefix = activity.getApplicationContext().getPackageName() + ".";
+        int start = prefix.length();
+        int length = files.length;
+        String file;
+        for (int i=length-1;i>-1;i--) {
+            file = files[i];
+            files[i] = file.substring(start);
+        }
+
+        Arrays.sort(files);
+        return files;
+    }
+
+    public static void deleteFile(Activity activity, String fileName) {
+        File dir = activity.getFilesDir();
+        (new File(dir, fileName)).delete();
+    }
 
 }

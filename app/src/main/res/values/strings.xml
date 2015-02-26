@@ -5,6 +5,7 @@
     <string name="app_name">Shutdown Timer</string>
     <string name="action_settings">Settings</string>
     <string name="bluetooth">Bluetooth</string>
+    <string name="ellipsis">&#8230;</string>
     <string name="lvTimers">Timers</string>
     <string name="minus_symbol">-</string>
 
