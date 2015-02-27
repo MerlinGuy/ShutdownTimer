@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <CheckBoxPreference
+        android:key="@string/pref_test_mode"
+        android:title="@string/test_mode"
+        android:summary="@string/test_summary"
+        android:defaultValue="true" />
+</PreferenceScreen>

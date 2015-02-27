@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -18,9 +19,12 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.preference.PreferenceManager;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.MenuItem;
 import android.widget.AdapterView;
@@ -31,6 +35,8 @@ import android.view.View.OnClickListener;
 import android.widget.Spinner;
 import android.widget.Toast;
 import android.widget.Button;
+
+
 
 import org.json.JSONObject;
 
@@ -77,6 +83,9 @@ public class ShutdownTimer extends Activity {
         _spnApp = (Spinner) findViewById(R.id.spnApp);
         _spnTimer = (Spinner) findViewById(R.id.spnTimer);
 
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+//        String testMode = sharedPref.getString(getResources().getString(R.string.pref_test_mode), "");
+
         setupAppList();
 
         reloadTimerList();
@@ -95,7 +104,9 @@ public class ShutdownTimer extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_shutdowntimer, menu);
+        super.onCreateOptionsMenu(menu);
+        MenuInflater mi = getMenuInflater();
+        mi.inflate(R.menu.menu_shutdowntimer, menu);
         return true;
     }
 
@@ -108,6 +119,8 @@ public class ShutdownTimer extends Activity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent i = new Intent(this, SettingsActivity.class);
+            startActivity(i);
             return true;
         }
 
@@ -116,6 +129,20 @@ public class ShutdownTimer extends Activity {
 
     private void setupListeners() {
         final Activity mActivity = this;
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+// Instance field for listener
+        OnSharedPreferenceChangeListener listener = new OnSharedPreferenceChangeListener() {
+            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                String test_mode = getResources().getString(R.string.pref_test_mode);
+                if (key.equals(test_mode)) {
+                    IS_TEST = prefs.getBoolean(test_mode, false);
+                }
+            }
+        };
+
+        prefs.registerOnSharedPreferenceChangeListener(listener);
 
         final OnClickListener ocl = new OnClickListener() {
             public void onClick(final View v) {

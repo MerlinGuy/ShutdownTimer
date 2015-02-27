@@ -6,6 +6,8 @@
     <string name="action_settings">Settings</string>
     <string name="bluetooth">Bluetooth</string>
     <string name="ellipsis">&#8230;</string>
+
+    <string name="help">Help</string>
     <string name="lvTimers">Timers</string>
     <string name="minus_symbol">-</string>
 
@@ -17,10 +19,23 @@
 
     <string name="pause_word">Pause</string>
     <string name="quit_word">Quit</string>
+
+    <string name="reset_default">Reset Default</string>
+
     <string name="start_word">Start</string>
     <string name="timers">Timers</string>
+    <string name="test_mode">Test Mode</string>
+    <string name="test_summary">Sets all timer length to 10 seconds for quick testing</string>
 
     <string name="unselected">&lt;unselected&gt;</string>
     <string name="mute">Mute</string>
     <string name="wifi">Wifi</string>
+    <string name="title_activity_preferences">Preferences</string>
+
+    <string name="hello_world">Hello world!</string>
+
+
+    <!--  Preferences -->
+
+    <string name="pref_test_mode">TEST_MODE</string>
 </resources>
