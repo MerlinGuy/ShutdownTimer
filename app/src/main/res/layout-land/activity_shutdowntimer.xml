@@ -90,7 +90,7 @@
             android:textSize="30sp"
             android:enabled="false"
             android:width="180dp"
-            android:background="@drawable/custom_bg_2"
+            android:background="@drawable/black_border"
             android:layout_gravity="center_vertical"
             android:gravity="center"/>
 

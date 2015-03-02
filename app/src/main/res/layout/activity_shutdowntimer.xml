@@ -85,7 +85,7 @@
         android:layout_below="@+id/loApps"
         android:width="220dp"
         android:layout_centerHorizontal="true"
-        android:background="@drawable/custom_bg_2" />
+        android:background="@drawable/black_border" />
 
     <RelativeLayout
         android:orientation="horizontal"

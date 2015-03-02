@@ -53,7 +53,12 @@ public class ShutdownTimer extends Activity {
     public final static String RUN_SECS = "run_seconds";
     private final static String RUN_APP = "run_app";
 
-    private int _runSeconds = 10;
+    private int[] _btnsTime = new int[] {R.id.btn1,R.id.btn5,R.id.btn10,R.id.btn30,R.id.btn60
+            ,R.id.btnMinus1,R.id.btnMinus5,R.id.btnMinus10,R.id.btnMinus30,R.id.btnMinus60};
+
+    private int _testSeconds = 10;
+    private int _runSeconds = _testSeconds;
+
     private CountDownTimer _cdTimer = null;
     private int _runState = NOT_STARTED;
     private boolean _initialized = false;
@@ -67,10 +72,11 @@ public class ShutdownTimer extends Activity {
     private Spinner _spnApp = null;
     private Spinner _spnTimer = null;
 
-    private String _currentStateName;
+    private String _currentStateName = null;
     private JSONObject _currentState;
 
     protected boolean IS_TEST = false;
+    private String TEST_MODE = "";
     private String _unselected;
 
     @Override
@@ -78,24 +84,29 @@ public class ShutdownTimer extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shutdowntimer);
 
+        TEST_MODE = getResources().getString(R.string.pref_test_mode);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        IS_TEST = prefs.getBoolean(TEST_MODE, false);
+        setTest();
+
         _unselected = getString(R.string.unselected);
         _currentStateName = DEFAULT_STATE;
         _spnApp = (Spinner) findViewById(R.id.spnApp);
         _spnTimer = (Spinner) findViewById(R.id.spnTimer);
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-//        String testMode = sharedPref.getString(getResources().getString(R.string.pref_test_mode), "");
+        _cbBluetooth = (CheckBox) findViewById(R.id.cbBluetooth);
+        _BluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        _cbWifi = (CheckBox) findViewById(R.id.cbWifi);
 
         setupAppList();
 
         reloadTimerList();
 
-        loadState(_currentStateName);
+        loadState();
 
         setupListeners();
 
 //        setBluetoothCallback();
-
 //        setWifiCallback();
 
         _initialized = true;
@@ -132,12 +143,11 @@ public class ShutdownTimer extends Activity {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-// Instance field for listener
         OnSharedPreferenceChangeListener listener = new OnSharedPreferenceChangeListener() {
             public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                String test_mode = getResources().getString(R.string.pref_test_mode);
-                if (key.equals(test_mode)) {
-                    IS_TEST = prefs.getBoolean(test_mode, false);
+                if (key.equals(TEST_MODE)) {
+                    IS_TEST = prefs.getBoolean(key, false);
+                    setTest();
                 }
             }
         };
@@ -156,17 +166,9 @@ public class ShutdownTimer extends Activity {
             }
         };
 
-        findViewById(R.id.btn1).setOnClickListener(ocl);
-        findViewById(R.id.btn5).setOnClickListener(ocl);
-        findViewById(R.id.btn10).setOnClickListener(ocl);
-        findViewById(R.id.btn30).setOnClickListener(ocl);
-        findViewById(R.id.btn60).setOnClickListener(ocl);
-        findViewById(R.id.btnMinus1).setOnClickListener(ocl);
-        findViewById(R.id.btnMinus5).setOnClickListener(ocl);
-        findViewById(R.id.btnMinus10).setOnClickListener(ocl);
-        findViewById(R.id.btnMinus30).setOnClickListener(ocl);
-        findViewById(R.id.btnMinus60).setOnClickListener(ocl);
-
+        for (int btnID : _btnsTime) {
+            findViewById(btnID).setOnClickListener(ocl);
+        }
 
         findViewById(R.id.btnCancel).setOnClickListener(
                 new OnClickListener() {
@@ -218,8 +220,8 @@ public class ShutdownTimer extends Activity {
         _spnTimer.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                String fileName = (String) _spnTimer.getSelectedItem();
-                loadState(fileName);
+                _currentStateName = (String) _spnTimer.getSelectedItem();
+                loadState();
             }
 
             public void onNothingSelected(AdapterView<?> parent) {
@@ -227,6 +229,19 @@ public class ShutdownTimer extends Activity {
             }
 
         });
+    }
+
+    private void setTest() {
+        for (int btnID : _btnsTime) {
+            findViewById(btnID).setEnabled(! IS_TEST);
+        }
+        View view = findViewById(R.id.txtCountdown);
+        if (IS_TEST) {
+            view.setBackgroundResource(R.drawable.red_border);
+        } else {
+            view.setBackgroundResource(R.drawable.black_border);
+        }
+        loadState();
     }
 
     private void showTimerDialog(Activity activity, String timerName, JSONObject json) {
@@ -308,11 +323,11 @@ public class ShutdownTimer extends Activity {
         }
     }
 
-    private void loadState(String state_name) {
+    private void loadState() {
         try {
-            JSONObject state = FileManager.restoreState(this, state_name);
+            if (_currentStateName == null) return;
+            JSONObject state = FileManager.restoreState(this, _currentStateName);
             if (state != null) {
-                _currentStateName = state_name;
                 _currentState = state;
                 _runSeconds = _currentState.optInt(RUN_SECS, _defaultRunSeconds);
                 if (IS_TEST) {
@@ -482,7 +497,7 @@ public class ShutdownTimer extends Activity {
                 wifiManager.setWifiEnabled(false);
             }
 
-            if (_currentState.optBoolean((String) getTag(R.id.cbMute), false)) {
+            if (_currentState != null && _currentState.optBoolean((String) getTag(R.id.cbMute), false)) {
                 lowerVolume(0);
             }
 
@@ -505,8 +520,7 @@ public class ShutdownTimer extends Activity {
 
 //    private void setBluetoothCallback() {
 //
-//        _cbBluetooth = (CheckBox) findViewById(R.id.cbBluetooth);
-//        _BluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+//
 //        _cbBluetooth.setEnabled( (_BluetoothAdapter != null) && _BluetoothAdapter.isEnabled() );
 //
 //        BroadcastReceiver br = new BroadcastReceiver() {
@@ -543,7 +557,7 @@ public class ShutdownTimer extends Activity {
 //    private void setWifiCallback() {
 //        WifiManager wifiManager;
 //
-//        _cbWifi = (CheckBox) findViewById(R.id.cbWifi);
+//
 //        wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
 //        _cbWifi.setEnabled(wifiManager != null && wifiManager.isWifiEnabled());
 //
