@@ -1,6 +1,7 @@
 package org.ftcollinsresearch.shutdowntimer;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -40,9 +41,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ShutdownTimer extends Activity {
+public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeListener {
 
-    private final static int NOT_STARTED = 0, RUNNING = 1, PAUSED = 2;
+    final static int NOT_STARTED = 0, RUNNING = 1, PAUSED = 2;
 
     private int[] _btnsTime = new int[] {R.id.btn1,R.id.btn5,R.id.btn10,R.id.btn30,R.id.btn60
             ,R.id.btnMinus1,R.id.btnMinus5,R.id.btnMinus10,R.id.btnMinus30,R.id.btnMinus60};
@@ -52,9 +53,10 @@ public class ShutdownTimer extends Activity {
     private int _testSeconds = 10;
     private int _runSeconds = _testSeconds;
 
+    private SharedPreferences _prefs = null;
+
     private CountDownTimer _cdTimer = null;
     private int _runState = NOT_STARTED;
-    private boolean _initialized = false;
 
     private BluetoothAdapter _BluetoothAdapter = null;
     private CheckBox _cbBluetooth = null;
@@ -65,10 +67,18 @@ public class ShutdownTimer extends Activity {
     private ArrayAdapter<PInfo> _appAdapter = null;
     private Spinner _spnApp = null;
     private Spinner _spnTimer = null;
+    private ArrayAdapter<Timer> _timerAdapter = null;
 
-    protected boolean IS_TEST = false;
+    private boolean IS_TEST = false;
     private String TEST_MODE = "";
-    private String _unselected = null;
+    private String KILL_DONE = "";
+    private boolean _kill_on_complete = false;
+
+    private String UNSELECTED = null;
+    private String LAST_TIMER = null;
+    private String _pref_timer = null;
+    private Timer _runTimer = null;
+    private boolean _settingTimer = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,14 +86,11 @@ public class ShutdownTimer extends Activity {
         setContentView(R.layout.activity_shutdowntimer);
 
         TEST_MODE = getString(R.string.pref_test_mode);
-        _unselected = getString(R.string.unselected);
+        KILL_DONE = getString(R.string.pref_kill_done);
+        UNSELECTED = getResources().getString(R.string.unselected);
+        LAST_TIMER = getResources().getString(R.string.last_timer);
 
         _timerMgr = new TimerManager(this);
-
-        // Set Test mode if selected in preferences
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        IS_TEST = prefs.getBoolean(TEST_MODE, false);
-        setTest();
 
         _spnApp = (Spinner) findViewById(R.id.spnApp);
         _spnTimer = (Spinner) findViewById(R.id.spnTimer);
@@ -92,14 +99,20 @@ public class ShutdownTimer extends Activity {
         _cbWifi = (CheckBox) findViewById(R.id.cbWifi);
         _cbMute = (CheckBox) findViewById(R.id.cbMute);
 
+        _prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        _prefs.registerOnSharedPreferenceChangeListener(this);
+
         setupAppList();
 
-        reloadTimerList(null);
+        loadPreferences();
+
+        reloadTimerList( _pref_timer );
 
         setupListeners();
 
-        _initialized = true;
+        _timerMgr.setCanUpdate(true);
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -121,22 +134,24 @@ public class ShutdownTimer extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        if (key.equals(KILL_DONE)) {
+            _kill_on_complete = prefs.getBoolean(KILL_DONE, false);
+        } else if (key.equals(TEST_MODE)) {
+            setTest();
+        }
+    }
+
+    private void loadPreferences() {
+        // Set Test mode if selected in preferences
+        setTest();
+        _kill_on_complete = _prefs.getBoolean(KILL_DONE, false);
+        _pref_timer =  _prefs.getString(LAST_TIMER,null);
+    }
 
     private void setupListeners() {
         final Activity mActivity = this;
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        OnSharedPreferenceChangeListener listener = new OnSharedPreferenceChangeListener() {
-            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                if (key.equals(TEST_MODE)) {
-                    IS_TEST = prefs.getBoolean(key, false);
-                    setTest();
-                }
-            }
-        };
-
-        prefs.registerOnSharedPreferenceChangeListener(listener);
 
         final OnClickListener ocl = new OnClickListener() {
             public void onClick(final View v) {
@@ -147,7 +162,7 @@ public class ShutdownTimer extends Activity {
                     _runSeconds = 0;
                 }
                 timer.run_time  = _runSeconds;
-                saveTimer(timer);
+                _timerMgr.update(timer);
                 setRunSeconds();
             }
         };
@@ -171,8 +186,7 @@ public class ShutdownTimer extends Activity {
             new OnClickListener() {
                 @Override
                 public void onClick(View arg0) {
-                    Timer timer = (Timer) _spnTimer.getSelectedItem();
-                    startCountdown(timer);
+                    startCountdown();
                 }
             }
         );
@@ -192,7 +206,7 @@ public class ShutdownTimer extends Activity {
                 public void onClick(View v) {
                     Timer timer = (Timer) _spnTimer.getSelectedItem();
                     timer.dis_bluetooth = ((CheckBox)v).isChecked();
-                    saveTimer(timer);
+                    _timerMgr.update(timer);
                 }
             }
         );
@@ -203,7 +217,7 @@ public class ShutdownTimer extends Activity {
                     public void onClick(View v) {
                         Timer timer = (Timer) _spnTimer.getSelectedItem();
                         timer.dis_wifi = ((CheckBox)v).isChecked();
-                        saveTimer(timer);
+                        _timerMgr.update(timer);
                     }
                 }
         );
@@ -213,7 +227,7 @@ public class ShutdownTimer extends Activity {
                     public void onClick(View v) {
                         Timer timer = (Timer) _spnTimer.getSelectedItem();
                         timer.mute = ((CheckBox)v).isChecked();
-                        saveTimer(timer);
+                        _timerMgr.update(timer);
                     }
                 }
         );
@@ -221,10 +235,13 @@ public class ShutdownTimer extends Activity {
         _spnApp.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                PInfo pinfo = (PInfo) _spnApp.getSelectedItem();
-                Timer timer = (Timer) _spnTimer.getSelectedItem();
-                timer.run_app = pinfo.pname;
-                saveTimer(timer);
+                if (! _settingTimer) {
+                    PInfo pinfo = (PInfo) _spnApp.getSelectedItem();
+                    Timer timer = (Timer) _spnTimer.getSelectedItem();
+                    timer.run_app = pinfo.pname;
+                    _timerMgr.update(timer);
+                }
+                _settingTimer = false;
             }
 
             public void onNothingSelected(AdapterView<?> parent) {
@@ -236,7 +253,9 @@ public class ShutdownTimer extends Activity {
         _spnTimer.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                setTimerFields((Timer) _spnTimer.getSelectedItem());
+                _settingTimer = true;
+                _runTimer = (Timer) _spnTimer.getSelectedItem();
+                setTimerFields();
             }
 
             public void onNothingSelected(AdapterView<?> parent) {
@@ -246,29 +265,15 @@ public class ShutdownTimer extends Activity {
         });
     }
 
-    private void setTest() {
-        for (int btnID : _btnsTime) {
-            findViewById(btnID).setEnabled(! IS_TEST);
-        }
-        View view = findViewById(R.id.txtCountdown);
-        if (IS_TEST) {
-            view.setBackgroundResource(R.drawable.red_border);
-        } else {
-            view.setBackgroundResource(R.drawable.black_border);
-        }
-//        loadTimer(_curTimer.name);
-    }
-
     private void showTimerDialog(Activity activity) {
         final Activity mActivity = activity;
         final Timer timer = (Timer) _spnTimer.getSelectedItem();
-        final String orgName = new String(timer.name);
+        final String orgName = timer.name;
 
         DialogInterface.OnCancelListener ocl = new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
-                Timer timer = (Timer) _spnTimer.getSelectedItem();
-                reloadTimerList(timer);
+                reloadTimerList(orgName);
             }
         };
 
@@ -283,10 +288,10 @@ public class ShutdownTimer extends Activity {
         dialog.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 timer.name =  input.getText().toString();
-                if (!timer.name.equals(orgName)) {
+                if (! timer.name.equals(orgName)) {
                     timer.id = -1;
                 }
-                saveTimer(timer);
+                _timerMgr.update(timer);
                 dialog.cancel();
             }
         });
@@ -307,22 +312,21 @@ public class ShutdownTimer extends Activity {
         dialog.create().show();
     }
 
-    private void saveTimer(Timer timer) {
-        if (! _initialized) return;
-        _timerMgr.update(timer);
-    }
+    private void setTimerFields() {
+        SharedPreferences.Editor editor = getPreferences(Context.MODE_PRIVATE).edit();
+        editor.putString(LAST_TIMER, _runTimer.name);
+        editor.apply();
 
-    private void setTimerFields(Timer timer) {
-        _runSeconds = IS_TEST ? 10 : timer.run_time;
-        _cbBluetooth.setChecked(timer.dis_bluetooth);
-        _cbWifi.setChecked(timer.dis_wifi);
-        _cbMute.setChecked(timer.mute);
-        setRunApp(timer.run_app);
+        _runSeconds = IS_TEST ? 10 : _runTimer.run_time;
+        _cbBluetooth.setChecked(_runTimer.dis_bluetooth);
+        _cbWifi.setChecked(_runTimer.dis_wifi);
+        _cbMute.setChecked(_runTimer.mute);
+        setRunApp(_runTimer.run_app);
         setRunSeconds();
     }
 
     private void setRunApp(String packageName) {
-        int position = -1;
+        int position = 0;
         PInfo pi;
 
         if (packageName != null) {
@@ -337,58 +341,38 @@ public class ShutdownTimer extends Activity {
         _spnApp.setSelection(position);
     }
 
-    private void setupAppList() {
+    private void reloadTimerList( String timerName ) {
 
-        final PackageManager pm = getPackageManager();
-        List<PackageInfo> pkgs = pm.getInstalledPackages(0);
-        _PInfos = new ArrayList<PInfo>();
+        _timerAdapter = _timerMgr.getAdapter(this,R.layout.spinner_timer);
+        if (_timerAdapter.getCount() == 0) {
+            _timerAdapter.add(new Timer());
+        }
+        _spnTimer.setAdapter(_timerAdapter);
+        if ( timerName != null) {
+            _runTimer = getTimerByName( timerName, true );
+        }
 
-        _PInfos.add(new PInfo(_unselected, "none"));
+    }
 
-        for (PackageInfo pi : pkgs) {
-            if ((pi.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
-                _PInfos.add( new PInfo( pi, pm) );
+    private Timer getTimerByName(String timerName, boolean setSpinner) {
+
+        if (timerName == null) return null;
+
+        for (int i=0;i<_timerAdapter.getCount();i++) {
+            Timer timer = _timerAdapter.getItem(i);
+            if (timer.name.equals(timerName)) {
+                if (setSpinner) {
+                    _spnTimer.setSelection(i, false);
+                    _runTimer = timer;
+                    setTimerFields();
+                }
+                return timer;
             }
-
         }
-
-        Collections.sort(_PInfos, new PInfoComparator());
-
-        _appAdapter = new ArrayAdapter<PInfo>(this,android.R.layout.simple_spinner_item, _PInfos);
-        _appAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        _spnApp.setAdapter(_appAdapter);
-        _spnApp.setSelection(0, false);
+        return null;
     }
 
-    private void reloadTimerList(Timer selected) {
-        ArrayAdapter<Timer> timers = _timerMgr.getAdapter(this,android.R.layout.simple_spinner_item );
-        if (timers.getCount() == 0) {
-            timers.add(new Timer());
-        }
-        _spnTimer.setAdapter(timers);
-        int position = -1;
-        if (selected != null) {
-            position = timers.getPosition(selected);
-        }
-        if (position == -1) {
-            selected = timers.getItem(0);
-            position = 0;
-        }
-        _spnTimer.setSelection(position, false);
-        setTimerFields(selected);
-    }
-
-    private void setRunSeconds() {
-        int hours = _runSeconds / 3600;
-        int remain = _runSeconds - (hours * 3600);
-        int minutes = remain / 60;
-        int seconds = (remain - (minutes * 60));
-        String timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-        EditText editText = (EditText)findViewById(R.id.txtCountdown);
-        editText.setText(timeString);
-    }
-
-    private void startCountdown(Timer timer) {
+    private void startCountdown() {
 
         if ((_runState == NOT_STARTED) || (_runState == PAUSED)) {
             showShutdownNotification();
@@ -396,7 +380,7 @@ public class ShutdownTimer extends Activity {
             ((Button)findViewById(R.id.btnStartTimer)).setText(R.string.pause_word);
 
             if (_runState != PAUSED) {
-                startApp(timer);
+                startApp(_runTimer);
             }
             _runState = RUNNING;
         }
@@ -411,11 +395,112 @@ public class ShutdownTimer extends Activity {
     private void startApp(Timer timer) {
         try {
             String runApp = timer.run_app;
-            if (runApp == null || runApp.equalsIgnoreCase(_unselected)) return;
-            Intent LaunchIntent = getPackageManager().getLaunchIntentForPackage(runApp);
-            startActivity(LaunchIntent);
+            if (runApp == null || runApp.equals(UNSELECTED) || runApp.equals("none")) return;
+
+            Intent intent = getPackageManager().getLaunchIntentForPackage(runApp);
+            startActivity(intent);
         } catch (Exception e) {
             Log.e("FCR", e.getMessage());
+        }
+    }
+
+    private void createCountDown() {
+        _cdTimer = new CountDownTimer(_runSeconds * 1000, 1000) {
+
+            public void onTick(long millisUntilFinished) {
+                _runSeconds = (int) (millisUntilFinished / 1000);
+                setRunSeconds();
+            }
+
+            public void onFinish() {
+                shutdown();
+            }
+        }.start();
+    }
+
+    private void shutdown() {
+        try {
+            if (_runTimer.dis_bluetooth ) {
+                if (_runTimer.mute) {
+                    muteDevice();
+                }
+                _BluetoothAdapter.disable();
+            }
+
+            if (_runTimer.dis_wifi) {
+                WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+                wifiManager.setWifiEnabled(false);
+            }
+
+            if (_runTimer.mute) {
+                muteDevice();
+            }
+
+            String runApp = _runTimer.run_app;
+            if (runApp != null && ! runApp.equals(UNSELECTED) && !runApp.equals("none")) {
+
+            }
+
+        } catch (Exception e) {
+            Toast toast = Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG);
+            toast.show();
+        }
+
+        _runSeconds = 0;
+        setRunSeconds();
+        clearNotification();
+        if (_kill_on_complete) {
+            clearNotification();
+            android.os.Process.killProcess(android.os.Process.myPid());
+            System.exit(1);
+
+        } else {
+            Toast toast = Toast.makeText(getApplicationContext(), "Timer Complete", Toast.LENGTH_SHORT);
+            toast.show();
+            this.setTimerFields();
+            ((Button)findViewById(R.id.btnStartTimer)).setText(R.string.start_word);
+        }
+    }
+
+    private long getPid(String pkgName) {
+        ActivityManager am = (ActivityManager)this.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> pids = am.getRunningAppProcesses();
+
+        for(int i = 0; i < pids.size(); i++) {
+            ActivityManager.RunningAppProcessInfo info = pids.get(i);
+            if(info.processName.equalsIgnoreCase(pkgName)){
+                return info.pid;
+            }
+        }
+        return -1;
+    }
+
+    private void muteDevice() {
+        AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        am.setStreamVolume(AudioManager.STREAM_MUSIC,0,AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
+//        am.setStreamMute(AudioManager.STREAM_MUSIC, true);
+    }
+
+    private void setRunSeconds() {
+        int hours = _runSeconds / 3600;
+        int remain = _runSeconds - (hours * 3600);
+        int minutes = remain / 60;
+        int seconds = (remain - (minutes * 60));
+        String timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+        EditText editText = (EditText)findViewById(R.id.txtCountdown);
+        editText.setText(timeString);
+    }
+
+    private void setTest() {
+        IS_TEST = _prefs.getBoolean(TEST_MODE, false);
+        for (int btnID : _btnsTime) {
+            findViewById(btnID).setEnabled(! IS_TEST);
+        }
+        View view = findViewById(R.id.txtCountdown);
+        if (IS_TEST) {
+            view.setBackgroundResource(R.drawable.red_border);
+        } else {
+            view.setBackgroundResource(R.drawable.black_border);
         }
     }
 
@@ -458,50 +543,27 @@ public class ShutdownTimer extends Activity {
         notificationManager.cancel(1);
     }
 
-    private void createCountDown() {
-        _cdTimer = new CountDownTimer(_runSeconds * 1000, 1000) {
+    private void setupAppList() {
 
-            public void onTick(long millisUntilFinished) {
-                _runSeconds = (int) (millisUntilFinished / 1000);
-                setRunSeconds();
+        final PackageManager pm = getPackageManager();
+        List<PackageInfo> pkgs = pm.getInstalledPackages(0);
+        _PInfos = new ArrayList<PInfo>();
+
+        _PInfos.add(new PInfo(UNSELECTED, "none"));
+
+        for (PackageInfo pi : pkgs) {
+            if ((pi.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
+                _PInfos.add( new PInfo( pi, pm) );
             }
 
-            public void onFinish() {
-                shutdown();
-            }
-        }.start();
-    }
-
-    private void shutdown() {
-        try {
-            Timer timer = (Timer) _spnTimer.getSelectedItem();
-            if (timer != null && timer.mute) {
-                lowerVolume(0);
-            }
-
-            if (_cbBluetooth.isEnabled() && _cbBluetooth.isChecked() ) {
-                _BluetoothAdapter.disable();
-            }
-
-            if (_cbWifi.isEnabled() && _cbWifi.isChecked()) {
-                WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
-                wifiManager.setWifiEnabled(false);
-            }
-
-            Toast toast = Toast.makeText(getApplicationContext(), "Timer Complete", Toast.LENGTH_SHORT);
-            toast.show();
-        } catch (Exception e) {
-            Toast toast = Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG);
-            toast.show();
         }
 
-        _runSeconds = 0;
-        setRunSeconds();
-        clearNotification();
+        Collections.sort(_PInfos, new PInfoComparator());
+
+        _appAdapter = new ArrayAdapter<PInfo>(this,R.layout.spinner_app, _PInfos);
+        _appAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        _spnApp.setAdapter(_appAdapter);
+        _spnApp.setSelection(0, false);
     }
 
-    private void lowerVolume(int level) {
-        AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        am.setStreamVolume(AudioManager.STREAM_MUSIC,level,0);
-    }
 }

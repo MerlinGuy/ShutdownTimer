@@ -14,59 +14,47 @@
         android:id="@+id/loTimersApps"
         android:baselineAligned="false">
 
-        <LinearLayout
-            android:orientation="horizontal"
+        <TextView android:text="@string/timers"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/loTimers"
-            android:layout_weight="1">
+            android:layout_height="fill_parent"
+            android:id="@+id/tvTimers"
+            android:textSize="16sp"
+            android:layout_gravity="center_vertical|right"
+            android:textStyle="bold"
+            android:gravity="center_vertical" />
 
-            <TextView android:text="@string/timers"
-                android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
-                android:id="@+id/tvTimers"
-                android:textSize="18sp"
-                android:layout_gravity="center_vertical|right"
-                android:textStyle="bold"
-                android:gravity="center_vertical" />
+        <Spinner
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:id="@+id/spnTimer"
+            android:layout_weight=".9"
+            android:layout_marginLeft="4dp" />
 
-            <Spinner
-                android:layout_width="0dp"
-                android:layout_height="50dp"
-                android:id="@+id/lvTimer"
-                android:layout_weight="1"
-                android:gravity="fill_horizontal"
-                android:layout_marginLeft="4dp" />
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:text="@string/ellipsis"
+            android:id="@+id/btnAddTimer"
+            android:layout_gravity="center_vertical" />
 
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
+        <TextView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/loApps"
-            android:focusable="true"
+            android:layout_height="fill_parent"
+            android:text="@string/apps"
+            android:id="@+id/tvApps"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginLeft="8dp"
+            android:gravity="center_vertical" />
+
+        <Spinner
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:id="@+id/spnApp"
             android:layout_weight="1"
-            android:layout_marginLeft="6dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
-                android:text="@string/apps"
-                android:id="@+id/tvApps"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:gravity="center_vertical" />
-
-            <Spinner
-                android:layout_width="0dp"
-                android:layout_height="50dp"
-                android:id="@+id/spnApps"
-                android:layout_weight="1"
-                android:spinnerMode="dropdown"
-                android:layout_marginLeft="4dp" />
-
-        </LinearLayout>
+            android:spinnerMode="dropdown"
+            android:layout_marginLeft="4dp" />
 
     </LinearLayout>
 
@@ -237,12 +225,7 @@
             android:text="@string/bluetooth"
             android:id="@+id/cbBluetooth"
             android:checked="false"
-            android:enabled="false" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="5dp"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
         <CheckBox
             android:layout_width="wrap_content"
@@ -250,8 +233,17 @@
             android:text="@string/wifi"
             android:id="@+id/cbWifi"
             android:checked="false"
-            android:enabled="false"
-            android:layout_weight="1.02" />
+            android:layout_weight="1" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/mute"
+            android:tag="mute"
+            android:id="@+id/cbMute"
+            android:checked="false"
+            android:layout_weight="1"
+            android:layout_marginLeft="2dp" />
 
         <TextView
             android:layout_width="0dp"

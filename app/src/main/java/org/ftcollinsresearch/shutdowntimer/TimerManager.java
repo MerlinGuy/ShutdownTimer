@@ -19,6 +19,7 @@ public class TimerManager {
 //    private Context _context = null;
     TimerDbHelper _dbHelper = null;
     public static final String TABLE_NAME = "Timer";
+    private boolean _canUpdate = false;
 
     public TimerManager(Context context) {
         try {
@@ -28,7 +29,15 @@ public class TimerManager {
         }
     }
 
+    public void setCanUpdate(boolean canUpdate) {
+        _canUpdate = canUpdate;
+    }
+
     public boolean update(Timer timer) {
+        if (! _canUpdate ) return false;
+
+//        Log.d("FCR", "---------------------------");
+        timer.log(false);
         SQLiteDatabase db = _dbHelper.getWritableDatabase();
         ContentValues values = timer.getContent();
         if (timer.id > 0) {
@@ -44,6 +53,8 @@ public class TimerManager {
     }
 
     public List<Timer> list() {
+        Log.d("FCR", "+++++++++++++++++++++++++++++++++++++");
+
         List<Timer> list = new ArrayList<Timer>();
         try {
             SQLiteDatabase db = _dbHelper.getReadableDatabase();
@@ -57,8 +68,11 @@ public class TimerManager {
                     Timer.NAME + " DESC"             // The sort order
             );
 
+            Timer timer;
             while (c.moveToNext()) {
-                list.add(new Timer(c));
+                timer = new Timer(c);
+                timer.log(false);
+                list.add(timer);
             }
         } catch (Exception e) {
             Log.e("FCR", e.getMessage());
@@ -66,7 +80,7 @@ public class TimerManager {
         return list;
     }
 
-    public ArrayAdapter getAdapter(Context context, int resource) {
+    public ArrayAdapter<Timer> getAdapter(Context context, int resource) {
         return new ArrayAdapter<Timer>(context, resource, this.list());
     }
 

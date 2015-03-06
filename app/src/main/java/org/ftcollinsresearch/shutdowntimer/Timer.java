@@ -2,6 +2,7 @@ package org.ftcollinsresearch.shutdowntimer;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.util.Log;
 
 import org.json.JSONObject;
 
@@ -33,6 +34,7 @@ public class Timer {
     public String name = "default";
     public int run_time = DEFAULT_RUN_SECONDS;
     public String run_app = null;
+    public int pid = -1;
     public boolean dis_wifi = false;
     public boolean dis_bluetooth = false;
     public boolean mute = false;
@@ -48,6 +50,7 @@ public class Timer {
         this.dis_wifi = c.getInt(i++) == 1;
         this.dis_bluetooth = c.getInt(i++) == 1;
         this.mute = c.getInt(i++) == 1;
+//        this.log();
     }
 
     public String toString() {
@@ -66,4 +69,20 @@ public class Timer {
         return values;
     }
 
+    public void log(boolean line_break) {
+        if (line_break) {
+            Log.d("FCR", "id: " + this.id);
+            Log.d("FCR", "name: " + this.name);
+            Log.d("FCR", "run_time: " + this.run_time);
+            Log.d("FCR", "run_app: " + this.run_app);
+            Log.d("FCR", "dis_bluetooth: " + this.dis_bluetooth);
+            Log.d("FCR", "dis_wifi: " + this.dis_wifi);
+            Log.d("FCR", "mute: " + this.mute);
+        } else {
+            Log.d("FCR", "id: " + this.id + ", name: " + this.name
+                    + ", run_time: " + this.run_time + ", run_app: " + this.run_app
+                    + ", dis_bluetooth: " + this.dis_bluetooth + ", dis_wifi: " + this.dis_wifi
+                    + ", mute: "  + this.mute);
+        }
+    }
 }

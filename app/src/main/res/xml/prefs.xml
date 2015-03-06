@@ -5,4 +5,9 @@
         android:title="@string/test_mode"
         android:summary="@string/test_summary"
         android:defaultValue="true" />
+    <CheckBoxPreference
+        android:key="@string/pref_kill_done"
+        android:title="@string/kill_done"
+        android:summary="@string/kill_summary"
+        android:defaultValue="false" />
 </PreferenceScreen>
