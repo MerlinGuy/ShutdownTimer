@@ -5,7 +5,7 @@
         android:orderInCategory="100"
         android:icon="@android:drawable/ic_menu_preferences"
         android:showAsAction="never" />
-    <item android:id="@+id/about-page"
+    <item android:id="@+id/about_page"
         android:title="@string/about"
         android:orderInCategory="101"
         android:showAsAction="never" />
