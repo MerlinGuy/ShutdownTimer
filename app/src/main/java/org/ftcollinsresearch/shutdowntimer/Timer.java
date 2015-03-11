@@ -50,7 +50,6 @@ public class Timer {
         this.dis_wifi = c.getInt(i++) == 1;
         this.dis_bluetooth = c.getInt(i++) == 1;
         this.mute = c.getInt(i++) == 1;
-//        this.log();
     }
 
     public String toString() {

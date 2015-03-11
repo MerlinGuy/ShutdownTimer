@@ -3,6 +3,10 @@
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
         android:orderInCategory="100"
-        android:icon="@android:drawable/ic_menu_more"
+        android:icon="@android:drawable/ic_menu_preferences"
+        android:showAsAction="never" />
+    <item android:id="@+id/about-page"
+        android:title="@string/about"
+        android:orderInCategory="101"
         android:showAsAction="never" />
 </menu>

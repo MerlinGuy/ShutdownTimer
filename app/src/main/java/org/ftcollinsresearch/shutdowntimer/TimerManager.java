@@ -1,7 +1,6 @@
 /**
  * Created by jeff boehmer on 3/3/15.
  */
-
 package org.ftcollinsresearch.shutdowntimer;
 
 import android.content.ContentValues;
@@ -56,9 +55,10 @@ public class TimerManager {
         Log.d("FCR", "+++++++++++++++++++++++++++++++++++++");
 
         List<Timer> list = new ArrayList<Timer>();
+        Cursor c = null;
         try {
             SQLiteDatabase db = _dbHelper.getReadableDatabase();
-            Cursor c = db.query(
+            c = db.query(
                     TABLE_NAME,
                     Timer.COLUMNS,
                     null,                            // The columns for the WHERE clause
@@ -76,6 +76,10 @@ public class TimerManager {
             }
         } catch (Exception e) {
             Log.e("FCR", e.getMessage());
+        } finally {
+            if (c != null) {
+                c.close();
+            }
         }
         return list;
     }
@@ -102,6 +106,7 @@ public class TimerManager {
         if (c.moveToNext()) {
             timer = new Timer(c);
         }
+        c.close();
         return timer;
     }
 
@@ -123,6 +128,7 @@ public class TimerManager {
         if (c.moveToNext()) {
             timer = new Timer(c);
         }
+        c.close();
         return timer;
     }
 

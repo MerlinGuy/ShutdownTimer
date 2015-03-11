@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string name="about">About</string>
     <string name="apps">App</string>
     <string name="app_name">Shutdown Timer</string>
     <string name="action_settings">Settings</string>
@@ -39,5 +40,10 @@
     <string name="pref_kill_done">KILL_DONE</string>
     <string name="kill_done">Kill on complete</string>
     <string name="kill_summary">Kills the application off after the countdown completes</string>
+    <string name="title_activity_about">About</string>
+
+    <!-- About Strings -->
+    <string name="fcr">Fort Collins Research</string>
+    <string name="fcr_url">www.ftcollinsresearch.org</string>
 
 </resources>

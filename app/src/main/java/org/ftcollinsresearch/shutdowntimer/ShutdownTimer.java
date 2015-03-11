@@ -1,7 +1,6 @@
 package org.ftcollinsresearch.shutdowntimer;
 
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -80,6 +79,10 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
     private Timer _runTimer = null;
     private boolean _settingTimer = false;
 
+    /**
+     *
+     * @param savedInstanceState is the bundle passed into the parent class's onCreate method
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -113,7 +116,11 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         _timerMgr.setCanUpdate(true);
     }
 
-
+    /**
+     *
+     * @param menu is the menu to create and inflate
+     * @return true always at this time
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -123,6 +130,12 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         return true;
     }
 
+    /**
+     *
+     * @param item is the menu item to create an intent
+     * @return always returns true at this time.
+     *
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_settings) {
@@ -134,6 +147,11 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     *
+     * @param prefs is the passed in preferences
+     * @param key this name fo the
+     */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         if (key.equals(KILL_DONE)) {
@@ -143,6 +161,10 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         }
     }
 
+    /**
+     * Reloads the global variables for Test mode, kill vs reset on complete,
+     * and the last saved Timer
+     */
     private void loadPreferences() {
         // Set Test mode if selected in preferences
         setTest();
@@ -150,8 +172,11 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         _pref_timer =  _prefs.getString(LAST_TIMER,null);
     }
 
+    /**
+     * This method setups up the OnClick and ItemSelected listeners for
+     * the main Activity's buttons, checkboxes, and spinner controls.
+     */
     private void setupListeners() {
-        final Activity mActivity = this;
 
         final OnClickListener ocl = new OnClickListener() {
             public void onClick(final View v) {
@@ -195,7 +220,7 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
             new OnClickListener() {
                 @Override
                 public void onClick(View arg0) {
-                    showTimerDialog(mActivity);
+                    showTimerDialog();
                 }
             }
         );
@@ -265,8 +290,13 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         });
     }
 
-    private void showTimerDialog(Activity activity) {
-        final Activity mActivity = activity;
+    /**
+     * The method displays the Activity for renaming and deleting
+     * the current selected Timer
+     *
+     */
+    private void showTimerDialog() {
+        final Activity mActivity = this;
         final Timer timer = (Timer) _spnTimer.getSelectedItem();
         final String orgName = timer.name;
 
@@ -285,6 +315,8 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         dialog.setView(input);
         dialog.setOnCancelListener(ocl);
 
+        // Saves the changes made to the current timer.  If the name is changed
+        // it creates a new timer with the current settings
         dialog.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 timer.name =  input.getText().toString();
@@ -312,6 +344,11 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         dialog.create().show();
     }
 
+    /**
+     * Saves the current Timer name to preferences and sets the display fields
+     * to the current _runTimer values.
+     *
+     */
     private void setTimerFields() {
         SharedPreferences.Editor editor = getPreferences(Context.MODE_PRIVATE).edit();
         editor.putString(LAST_TIMER, _runTimer.name);
@@ -325,6 +362,12 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         setRunSeconds();
     }
 
+    /**
+     * This method sets the _spnApp spinner to the packageName passed in if
+     * found.
+     *
+     * @param packageName the name of the package to search for in the _spnApp spinner
+     */
     private void setRunApp(String packageName) {
         int position = 0;
         PInfo pi;
@@ -341,6 +384,13 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         _spnApp.setSelection(position);
     }
 
+    /**
+     * This method reloads the list of currently saved Timers.  It uses the
+     * TimerManager class to retrieve the list from the sqlite database.  If
+     * no timers are found it adds a default timer.
+     *
+     * @param timerName is the timer name to set as the selected timer if provided.
+     */
     private void reloadTimerList( String timerName ) {
 
         _timerAdapter = _timerMgr.getAdapter(this,R.layout.spinner_timer);
@@ -354,6 +404,14 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
 
     }
 
+    /**
+     * This method retrieves the timer by name from the list of loaded timers.  If the
+     * setSpinner is true it makes the found timer the current selected timer.
+     *
+     * @param timerName is the name of the timer to search for in the list of saved Timers.
+     * @param setSpinner if set selects the found timer in the _spnTimer spinner
+     * @return
+     */
     private Timer getTimerByName(String timerName, boolean setSpinner) {
 
         if (timerName == null) return null;
@@ -372,6 +430,10 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         return null;
     }
 
+    /**
+     * This method starts, pauses, and restarts the current selected Timer.
+     * It also starts the Timer's application if set.
+     */
     private void startCountdown() {
 
         if ((_runState == NOT_STARTED) || (_runState == PAUSED)) {
@@ -392,18 +454,31 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         }
     }
 
+    /**
+     * This method starts the Timer passed in as a new Activity
+     *
+     * @param timer is the timer to start
+     */
     private void startApp(Timer timer) {
+        if (timer == null) return;
         try {
             String runApp = timer.run_app;
             if (runApp == null || runApp.equals(UNSELECTED) || runApp.equals("none")) return;
 
             Intent intent = getPackageManager().getLaunchIntentForPackage(runApp);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
         } catch (Exception e) {
             Log.e("FCR", e.getMessage());
         }
     }
 
+    /**
+     * This method creates a CountDownTimer that sets it's onTick method to
+     * update the remaining time in the UI
+     *
+     */
     private void createCountDown() {
         _cdTimer = new CountDownTimer(_runSeconds * 1000, 1000) {
 
@@ -418,6 +493,12 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         }.start();
     }
 
+    /**
+     * This method handles the shutting down of selected features.  It also will kill off
+     * the application if that is the preference or reset the UI to the current timer
+     * specifications.
+     *
+     */
     private void shutdown() {
         try {
             if (_runTimer.dis_bluetooth ) {
@@ -436,10 +517,6 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
                 muteDevice();
             }
 
-            String runApp = _runTimer.run_app;
-            if (runApp != null && ! runApp.equals(UNSELECTED) && !runApp.equals("none")) {
-
-            }
 
         } catch (Exception e) {
             Toast toast = Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG);
@@ -462,25 +539,19 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         }
     }
 
-    private long getPid(String pkgName) {
-        ActivityManager am = (ActivityManager)this.getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.RunningAppProcessInfo> pids = am.getRunningAppProcesses();
-
-        for(int i = 0; i < pids.size(); i++) {
-            ActivityManager.RunningAppProcessInfo info = pids.get(i);
-            if(info.processName.equalsIgnoreCase(pkgName)){
-                return info.pid;
-            }
-        }
-        return -1;
-    }
-
+    /**
+     * This method mutes the media audio of the device
+     */
     private void muteDevice() {
         AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         am.setStreamVolume(AudioManager.STREAM_MUSIC,0,AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
-//        am.setStreamMute(AudioManager.STREAM_MUSIC, true);
     }
 
+    /**
+     * This method takes the current remaining run seconds and formats it to
+     * an Hours : Minutes : Seconds string and updates the UI's txtCountdown control
+     *
+     */
     private void setRunSeconds() {
         int hours = _runSeconds / 3600;
         int remain = _runSeconds - (hours * 3600);
@@ -491,6 +562,11 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         editText.setText(timeString);
     }
 
+    /**
+     * This method gets the current IS_TEST settings' preference and updates the UI
+     * look accordingly.
+     *
+     */
     private void setTest() {
         IS_TEST = _prefs.getBoolean(TEST_MODE, false);
         for (int btnID : _btnsTime) {
@@ -504,6 +580,11 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         }
     }
 
+    /**
+     * This method shows the ShutdownTimer icon in the Notification bar while running.  This
+     * allows the user to reshow the app if another application takes the display control.
+     *
+     */
     @SuppressWarnings("deprecation")
     private void showShutdownNotification(){
 
@@ -538,11 +619,18 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         notificationManager.notify(1, n);
     }
 
+    /**
+     * Clears the ShutdownTimer icon from the Notification bar.
+     */
     private void clearNotification() {
         NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(1);
     }
 
+    /**
+     * This method populates the Application spinner with the names of all non-system
+     * applications.
+     */
     private void setupAppList() {
 
         final PackageManager pm = getPackageManager();
