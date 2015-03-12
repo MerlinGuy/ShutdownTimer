@@ -16,6 +16,7 @@ import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -40,7 +41,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeListener {
+public class ShutdownTimer extends Activity
+                            implements OnSharedPreferenceChangeListener,
+                                            OnGetAppListCompleted {
 
     final static int NOT_STARTED = 0, RUNNING = 1, PAUSED = 2;
 
@@ -105,13 +108,11 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
         _prefs = PreferenceManager.getDefaultSharedPreferences(this);
         _prefs.registerOnSharedPreferenceChangeListener(this);
 
-        setupAppList();
-
         loadPreferences();
 
-        reloadTimerList( _pref_timer );
-
         setupListeners();
+
+        new GetAppList(this).execute();
 
         _timerMgr.setCanUpdate(true);
     }
@@ -410,7 +411,7 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
      *
      * @param timerName is the name of the timer to search for in the list of saved Timers.
      * @param setSpinner if set selects the found timer in the _spnTimer spinner
-     * @return
+     * @return the Timer from the _timerAdapter that matches the passed in timerName
      */
     private Timer getTimerByName(String timerName, boolean setSpinner) {
 
@@ -631,27 +632,49 @@ public class ShutdownTimer extends Activity implements OnSharedPreferenceChangeL
      * This method populates the Application spinner with the names of all non-system
      * applications.
      */
-    private void setupAppList() {
+    public void onGetAppListCompleted() {
 
-        final PackageManager pm = getPackageManager();
-        List<PackageInfo> pkgs = pm.getInstalledPackages(0);
-        _PInfos = new ArrayList<PInfo>();
-
-        _PInfos.add(new PInfo(UNSELECTED, "none"));
-
-        for (PackageInfo pi : pkgs) {
-            if ((pi.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
-                _PInfos.add( new PInfo( pi, pm) );
-            }
-
-        }
-
-        Collections.sort(_PInfos, new PInfoComparator());
-
-        _appAdapter = new ArrayAdapter<PInfo>(this,R.layout.spinner_app, _PInfos);
+        _appAdapter = new ArrayAdapter<PInfo>(this, R.layout.spinner_app, _PInfos);
         _appAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         _spnApp.setAdapter(_appAdapter);
         _spnApp.setSelection(0, false);
+
+        reloadTimerList(_pref_timer);
+
     }
 
+    /**
+     * AsyncTask to load the installed packages into the _PInfos Arraylist
+     */
+    private class GetAppList extends AsyncTask<Object, Object, Object> {
+
+        private OnGetAppListCompleted _listener;
+
+        public GetAppList(OnGetAppListCompleted listener) {
+            _listener = listener;
+        }
+
+        @Override
+        protected Object doInBackground(Object... object) {
+            final PackageManager pm = getPackageManager();
+            List<PackageInfo> pkgs = pm.getInstalledPackages(0);
+            _PInfos = new ArrayList<PInfo>();
+
+            _PInfos.add(new PInfo(UNSELECTED, "none"));
+
+            for (PackageInfo pi : pkgs) {
+                if ((pi.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
+                    _PInfos.add( new PInfo( pi, pm) );
+                }
+            }
+
+            Collections.sort(_PInfos, new PInfoComparator());
+
+            return null;
+        }
+
+        protected void onPostExecute(Object o) {
+            _listener.onGetAppListCompleted();
+        }
+    }
 }
