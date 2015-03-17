@@ -1,9 +1,13 @@
+/**
+ * Created by jeff boehmer on 2/19/15.
+ */
+
 package org.ftcollinsresearch.shutdowntimer;
 
 import java.util.Comparator;
 
 /**
- * Created by jeff boehmer on 2/19/15.
+ * Simple comparator for sorting the PInfo objects by appname
  */
 public class PInfoComparator implements Comparator<PInfo> {
     @Override

@@ -1,3 +1,7 @@
+/**
+ * Created by jeff boehmer on 2/27/15.
+ */
+
 package org.ftcollinsresearch.shutdowntimer;
 
 import android.content.SharedPreferences;
@@ -7,7 +11,7 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 
 /**
- * Created by jeff boehmer on 2/27/15.
+ * This class retrieves and saves the Preference settings for the applicaton
  */
 public class SettingsActivity extends PreferenceActivity {
 
@@ -26,8 +30,8 @@ public class SettingsActivity extends PreferenceActivity {
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
                                           String key) {
         if (key.equals(TEST_MODE)) {
-            Preference connectionPref = findPreference(key);
-            connectionPref.setSummary(sharedPreferences.getString(key, ""));
+            Preference pref = findPreference(key);
+            pref.setSummary(sharedPreferences.getString(key, ""));
         }
     }
 }

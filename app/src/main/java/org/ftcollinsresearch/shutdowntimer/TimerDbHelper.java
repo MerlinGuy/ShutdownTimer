@@ -1,15 +1,17 @@
+/**
+ * Created by jeff boehmer on 3/3/15.
+ *
+ * This program is free software and covered under the Apache License, Version 2.0 license
+ */
 package org.ftcollinsresearch.shutdowntimer;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
-
-
-import static org.ftcollinsresearch.shutdowntimer.Timer.*;
 
 /**
- * Created by jeff boehmer on 3/3/15.
+ * This class extends the SQLiteOpenHelper to create the database Timer.db and
+ * the table timer
  */
 public class TimerDbHelper extends SQLiteOpenHelper {
 
@@ -31,7 +33,6 @@ public class TimerDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-//        Log.d("FCR", CREATE_DDL);
         db.execSQL(CREATE_DDL);
     }
 

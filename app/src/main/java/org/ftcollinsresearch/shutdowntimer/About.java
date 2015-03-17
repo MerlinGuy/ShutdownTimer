@@ -1,3 +1,7 @@
+/**
+ * Created by jeff boehmer on 2/19/15.
+ */
+
 package org.ftcollinsresearch.shutdowntimer;
 
 import android.app.Activity;
@@ -5,7 +9,10 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-
+/**
+ * About Activity will display the Shutdowntimer information, 'how to' docs link, the
+ * source code url
+ */
 public class About extends Activity {
 
     @Override
@@ -13,7 +20,6 @@ public class About extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

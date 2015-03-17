@@ -1,13 +1,23 @@
+/**
+ * Created by jeff boehmer on 3/3/15.
+ *
+ * This program is free software and covered under the Apache License, Version 2.0 license
+ */
 package org.ftcollinsresearch.shutdowntimer;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.util.Log;
 
-import org.json.JSONObject;
-
 /**
- * Created by jeff boehmer on 3/3/15.
+ * The Timer class represents a saved set of values for a timer session.  It includes
+ * a name and the following optional values:
+ * <OL>
+ *     <LI>A non-system android application to ru at timer start</LI>
+ *     <LI>Whether or not to shutdown the device's Bluetooth at shutdown</LI>
+ *     <LI>Whether or not to shutdown the device's Wifi at shutdown</LI>
+ *     <LI>Whether or not to mute the device's media volume at shutdown</LI>
+ * </OL>
  */
 public class Timer {
 
@@ -34,7 +44,6 @@ public class Timer {
     public String name = "default";
     public int run_time = DEFAULT_RUN_SECONDS;
     public String run_app = null;
-    public int pid = -1;
     public boolean dis_wifi = false;
     public boolean dis_bluetooth = false;
     public boolean mute = false;
@@ -49,7 +58,7 @@ public class Timer {
         this.run_app = c.getString(i++);
         this.dis_wifi = c.getInt(i++) == 1;
         this.dis_bluetooth = c.getInt(i++) == 1;
-        this.mute = c.getInt(i++) == 1;
+        this.mute = c.getInt(i) == 1;
     }
 
     public String toString() {

@@ -1,5 +1,7 @@
 /**
  * Created by jeff boehmer on 3/3/15.
+ *
+ * This program is free software and covered under the Apache License, Version 2.0 license
  */
 package org.ftcollinsresearch.shutdowntimer;
 
@@ -13,10 +15,13 @@ import android.widget.ArrayAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class provides helper methods for interacting with the Timer table in the
+ * SQLiteDatabase.
+ */
 public class TimerManager {
 
-//    private Context _context = null;
-    TimerDbHelper _dbHelper = null;
+    private TimerDbHelper _dbHelper = null;
     public static final String TABLE_NAME = "Timer";
     private boolean _canUpdate = false;
 
@@ -32,6 +37,14 @@ public class TimerManager {
         _canUpdate = canUpdate;
     }
 
+    /**
+     * This class will either update a timer or create a new one. If
+     * the passed in timer object's id field is greater than 0 then
+     * the timer record is updated if found, otherwise a new record is created
+     *
+     * @param timer hows the data for the new or updated record
+     * @return True if the action is successful otherwise false
+     */
     public boolean update(Timer timer) {
         if (! _canUpdate ) return false;
 
@@ -51,8 +64,12 @@ public class TimerManager {
         }
     }
 
+    /**
+     * This method returns all the timers in the timer table in List form
+     * @return a List<Timer> of timers
+     */
     public List<Timer> list() {
-        Log.d("FCR", "+++++++++++++++++++++++++++++++++++++");
+//        Log.d("FCR", "+++++++++++++++++++++++++++++++++++++");
 
         List<Timer> list = new ArrayList<Timer>();
         Cursor c = null;
@@ -84,10 +101,24 @@ public class TimerManager {
         return list;
     }
 
+    /**
+     * Helper method to create a new ArrayAdapter of type Timer
+     * @param context holds the current application context
+     * @param resource holds the  ID for a layout file containing a TextView
+     *                 to use when instantiating views.
+     * @return an new ArrayAdapter<Timer>
+     */
     public ArrayAdapter<Timer> getAdapter(Context context, int resource) {
         return new ArrayAdapter<Timer>(context, resource, this.list());
     }
 
+    /**
+     * This is a helper method to read a specified timer from the SQLiteDatabase
+     * and return it in the form of a Timer object.
+     *
+     * @param id of the timer to retrieve from the database
+     * @return the new Timer object with the record data.
+     */
     public Timer read(int id) {
         SQLiteDatabase db = _dbHelper.getReadableDatabase();
         String [] selectionArgs = { String.valueOf(id)};
@@ -110,6 +141,13 @@ public class TimerManager {
         return timer;
     }
 
+    /**
+     * This is a helper method to read a specified timer from the SQLiteDatabase
+     * and return it in the form of a Timer object.
+     *
+     * @param name of the timer to retrieve from the database
+     * @return the new Timer object with the record data.
+     */
     public Timer readByName(String name) {
         SQLiteDatabase db = _dbHelper.getReadableDatabase();
         String [] selectionArgs = { name };
@@ -132,6 +170,12 @@ public class TimerManager {
         return timer;
     }
 
+    /**
+     * This is a helper method to delete a specified timer from the SQLiteDatabase
+     *
+     * @param timer to delete from the database
+     * @return True if th 
+     */
     public boolean delete(Timer timer) {
         SQLiteDatabase db = _dbHelper.getReadableDatabase();
         String [] args = { String.valueOf(timer.id)};

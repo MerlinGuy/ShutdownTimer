@@ -17,6 +17,11 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 
+/**
+ * This class is no longer used, instead the TimerDBHelper and TimerManager is
+ * now handling all the data persistance.
+ */
+@Deprecated
 public class FileManager {
 
     public static void saveState(Activity activity, String state_name, JSONObject jsonState) {
