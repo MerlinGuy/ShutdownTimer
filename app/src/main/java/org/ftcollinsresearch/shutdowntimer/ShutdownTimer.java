@@ -11,6 +11,7 @@ import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -62,6 +63,7 @@ public class ShutdownTimer extends Activity
     private int _runSeconds = _testSeconds;
 
     private SharedPreferences _prefs = null;
+    private ProgressDialog _splash = null;
 
     private CountDownTimer _cdTimer = null;
     private int _runState = NOT_STARTED;
@@ -116,7 +118,10 @@ public class ShutdownTimer extends Activity
 
         loadPreferences();
 
-        setupListeners();
+        _splash = new ProgressDialog(this);
+        _splash.setMessage("Loading. Please wait...");
+        _splash.setCancelable(true);
+        _splash.show();
 
         new GetAppList(this).execute();
 
@@ -640,13 +645,15 @@ public class ShutdownTimer extends Activity
      */
     public void onGetAppListCompleted() {
 
+        setupListeners();
+
         _appAdapter = new ArrayAdapter<PInfo>(this, R.layout.spinner_app, _PInfos);
         _appAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         _spnApp.setAdapter(_appAdapter);
         _spnApp.setSelection(0, false);
 
         reloadTimerList(_pref_timer);
-
+        _splash.cancel();
     }
 
     /**
